@@ -7,6 +7,8 @@ class Account {
     private double balance;
     private static double annualInterestRate = 4.5;
     private LocalDate dateCreated;
+    private String name;
+    private List<Transaction> transactions = new ArrayList<Transaction>();
 
     public Account(){
         this.id = 0;
@@ -18,6 +20,12 @@ class Account {
         this.id = id;
         this.balance = balance;
         this.dateCreated = LocalDate.now();
+    }
+    public Account(int id, double balance, String name) {
+        this.id = id;
+        this.balance = balance;
+        this.dateCreated = LocalDate.now();
+        this.name = name;
     }
 
 
@@ -56,6 +64,7 @@ class Account {
     public void deposit(double amount) {
         if (amount > 0) {
             balance += amount;
+            transactions.add(new Transaction("+", amount, balance, "Пополнение на сумму " + amount + " от " + LocalDate.now(), LocalDate.now()));
         } else {
             System.out.println("Сумма должна быть положительной.");
         }
@@ -64,36 +73,38 @@ class Account {
     public void withdraw(double amount) {
         if (amount > 0 && amount <= balance) {
             balance -= amount;
+            transactions.add(new Transaction("-", amount, balance, "Снятие денег на сумму " + amount + " от " + LocalDate.now(), LocalDate.now()));
         } else {
             System.out.println("Недостаточно средств или некорректная сумма.");
+        }
+    }
+    public void printSummary() {
+        System.out.println("Сводка по счету:");
+        System.out.println("Владелец: " + name);
+        System.out.println("ID: " + id);
+        System.out.println("Текущий баланс: " + balance + " руб.");
+        System.out.println("Годовая процентная ставка: " + annualInterestRate + "%");
+        System.out.println("Транзакции:");
+        for (Transaction transaction : transactions) {
+            System.out.println(transaction);
         }
     }
 }
 
 public class BankApplication {
     public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
+        Account account = new Account(1233, 1100, "Семен");
+        Account.setAnnualInterestRate(7.5);
 
-        List<Account> accounts = new ArrayList<Account>();
+        account.deposit(500);
+        account.deposit(600);
+        account.deposit(700);
 
-        Random rnd = new Random();
-        for (int i = 0; i < 10; i++){
-            accounts.add(new Account(i, Math.round(rnd.nextDouble(1000, 500000))));
-        }
+        account.withdraw(700);
+        account.withdraw(600);
+        account.withdraw(100);
 
-        while (true) {
-            System.out.print("Введите ID счета: ");
-            int inputId = scanner.nextInt();
-
-            Account account = findAccountById(accounts, inputId);
-
-            if (account != null) {
-                System.out.println("ID подтвержден.");
-                mainMenu(account);
-            } else {
-                System.out.println("Неверный ID, попробуйте еще раз.");
-            }
-        }
+        account.printSummary();
     }
 
     public static void mainMenu(Account account) {
@@ -105,7 +116,8 @@ public class BankApplication {
             System.out.println("3. Внести деньги");
             System.out.println("4. Рассчитать ежемесячные проценты");
             System.out.println("5. Показать дату создания счета");
-            System.out.println("6. Выход");
+            System.out.println("6. Сводка по аккаунту");
+            System.out.println("7. Выход");
 
             System.out.print("Выберите действие: ");
             int choice = scanner.nextInt();
@@ -132,6 +144,9 @@ public class BankApplication {
                     System.out.println("Дата создания счета: " + account.getdateCreated());
                     break;
                 case 6:
+                    account.printSummary();;
+                    return;
+                case 7:
                     System.out.println("Выход из системы.");
                     return;
                 default:
